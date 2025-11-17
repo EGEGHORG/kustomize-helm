@@ -1,0 +1,3 @@
+echo "kustomize build --enable-helm  lab > lab.yaml"
+echo "kustomize build --enable-helm  nonprod > nonprod.yaml"
+echo "kustomize build --enable-helm  prod > prod.yaml"

@@ -1,0 +1,24 @@
+---
+# apiVersion: configsync.gke.io/v1alpha1
+# kind: RepoSync
+apiVersion: configsync.gke.io/v1beta1
+kind: RootSync
+metadata:
+  name: wiz-kustomize
+  namespace: config-management-system
+  annotations:
+    # deleting a RootSync or RepoSync causes Config Sync to abandon the objects that were previously applied
+    # Deletion propagation is disabled by default. To enable deletion propagation,
+    # you add the configsync.gke.io/deletion-propagation-policy: Foreground annotation to your RootSync or RepoSync
+    configsync.gke.io/deletion-propagation-policy: Foreground
+spec:
+  sourceFormat: unstructured
+  git:
+    repo: https://github.com/EGEGHORG/gitops-capi
+    branch: main
+    dir: charts/config-sync-apps/apps/wiz-kustomize/lab
+    auth: githubapp
+    secretRef:
+      name: githubapp-repo-creds
+  override:
+    enableShellInRendering: true

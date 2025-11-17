@@ -1,0 +1,42 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+helmCharts:
+- name: wiz-kubernetes-integration
+  repo: https://wiz-sec.github.io/charts
+  includeCRDs: true
+  version: 0.2.134
+  releaseName: wiz
+  namespace: wiz
+  valuesFile: values.yaml
+patches:
+  - target:
+      kind: Secret
+      # optiional:  target a specific name
+      # name: wiz-connector
+    patch: |
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        annotations:
+          configmanagement.gke.io/managed: disabled
+        name: DOES NOT MATTER
+  - target:
+      kind: Job
+      # optiional:  target a specific name
+      # name: wiz-connector
+    patch: |
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        annotations:
+          configmanagement.gke.io/managed: disabled
+        name: DOES NOT MATTER
+  # https://github.com/kubernetes-sigs/kustomize/issues/1593
+  # - target:
+  #     kind: ClusterRole
+  #   patch: |
+  #     apiVersion: rbac.authorization.k8s.io/v1
+  #     kind: ClusterRole
+  #     metadata:
+  #       namespace: nulliiii
+  #       name: DOES NOT MATTER

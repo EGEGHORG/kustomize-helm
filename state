@@ -1,0 +1,51 @@
+ConfigSync s'utilise tres mal avec les taints:
+ - Chaque rootsync provoque la creation d<un deployment qu'il faut patcher pour rajouter les tolerations
+
+helm install: 
+ - methode recommendee pour correctement gerer les hooks helm - (ligne de commande, pileline).
+ - Pour deployer avec ConfigSync, la mecanique interne equivaut a helm template|kubectl
+Issue:
+ - Parmi les resources crees il y a 3 jobs. Un des jobs modifie un secret pour y mettre des nouvelles donnees que le deployment/wiz-agent utilise (CONNECTOR_ID)
+ - ConfigSync ecrase la modification du job provoquant le crashloop du deployment/wiz-agent.
+ - ConfigSync ne fournit pas de mecanisme pour ignorer la modification du .data d'un secret (ajoute par un autre process que lui-meme)
+ - ConfigSync recree automatiquement les jobs quand ils sont supprimes comme prevus par kuberenetes (activeDeadlineSeconds: 300) => les jobs recommencent leur actions d<initialisation
+
+Workaround 1 (KO): 
+Utiliser kustomize (--enable-helm) pour patcher les Secrets+Job afin qu'is soient crees par ConfigSync mais qu'il ne les gere plus en (annotation: configmanagement.gke.io/managed: disabled)
+Ce qui aurait permet que la modification reste permanente et que les jobs soient supprimes comme prevus. Malheureusement, en procedant ainsi, ces objets ne sont meme pas crees par ConfigSync.
+
+Workaround 2 (OK): 
+Ne pas utiliser ConfigSync et faire un kustomize build --enable-helm | kubectl apply -f - depuis un pipeline
+
+Workaround 3 (pas fiable): 
+Utiliser ConfigSync pour tout deployer sauf le secret. Creer le secret via un pipeline.
+Clash lors de futures mises a jour du chart
+
+serviceaccount/wiz-auto-modify-connector created (server dry run)
+serviceaccount/wiz-broker created (server dry run)
+serviceaccount/wiz-cluster-reader created (server dry run)
+serviceaccount/wiz-wiz-admission-controller created (server dry run)
+serviceaccount/wiz-wiz-admission-controller-manager created (server dry run)
+role.rbac.authorization.k8s.io/wiz-auto-modify-connector created (server dry run)
+role.rbac.authorization.k8s.io/wiz-wiz-admission-controller-manager-pods-and-deployments-manager created (server dry run)
+clusterrole.rbac.authorization.k8s.io/wiz-cluster-reader created (server dry run)
+clusterrole.rbac.authorization.k8s.io/wiz-wiz-admission-controller-manager-event-creator created (server dry run)
+clusterrole.rbac.authorization.k8s.io/wiz-wiz-admission-controller-namespace-reader created (server dry run)
+rolebinding.rbac.authorization.k8s.io/wiz-auto-modify-connector created (server dry run)
+rolebinding.rbac.authorization.k8s.io/wiz-wiz-admission-controller-manager-pods-and-deployments created (server dry run)
+clusterrolebinding.rbac.authorization.k8s.io/wiz-cluster-reader created (server dry run)
+clusterrolebinding.rbac.authorization.k8s.io/wiz-wiz-admission-controller-manager-event-creator created (server dry run)
+clusterrolebinding.rbac.authorization.k8s.io/wiz-wiz-admission-controller-namespace created (server dry run)
+secret/wiz-cluster-reader-token created (server dry run)
+secret/wiz-connector created (server dry run)
+secret/wiz-wiz-admission-controller-cert created (server dry run)
+service/wiz-wiz-admission-controller created (server dry run)
+service/wiz-wiz-admission-controller-audit-log-collector created (server dry run)
+deployment.apps/wiz-agent created (server dry run)
+deployment.apps/wiz-wiz-admission-controller created (server dry run)
+deployment.apps/wiz-wiz-admission-controller-audit-log-collector created (server dry run)
+cronjob.batch/wiz-wiz-admission-controller-manager created (server dry run)
+job.batch/wiz-kubernetes-connector-create-connector created (server dry run)
+job.batch/wiz-wiz-admission-controller-uninstall created (server dry run)
+validatingwebhookconfiguration.admissionregistration.k8s.io/wiz-wiz-admission-controller-kubernetes-audit-logs created (server dry run)
+validatingwebhookconfiguration.admissionregistration.k8s.io/wiz-wiz-admission-controller-misconfigurations created (server dry run)

@@ -1,0 +1,34 @@
+global:
+  wizApiToken:
+    secret:
+      create: false
+      name: "wiz-api-token"
+wiz-kubernetes-connector:
+  global:
+    image:
+      repository: wiz-broker
+  enabled: true
+  autoCreateConnector:
+    autoDeleteConnectorEnabled: false
+    clusterFlavor: AKS # Or pick your distro e.g. EKS
+    # connectorName: "your-connector-name" # This is an arbitrary name to assign the connector
+  image:
+    registry: artifactory.home.local/gitops-virtual/dev/wiz-appp
+  wiz-broker:
+    enabled: true
+    image:
+      registry: artifactory.home.local/gitops-virtual/dev/wiz-appp
+wiz-sensor:
+  enabled: false
+  image:
+    registry: artifactory.home.local/gitops-virtual/dev/acr-wizio-remote
+  imagePullSecret:
+    create: false
+    name: "sensor-image-pull"
+wiz-admission-controller:
+  enabled: true
+  image:
+    registry: artifactory.home.local/gitops-virtual/dev/wiz-appp
+    repository: wiz-admission-controller
+  kubernetesAuditLogsWebhook:
+    enabled: true

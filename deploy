@@ -1,0 +1,5 @@
+#!/bin/bash
+
+_env=lab
+kustomize build --enable-helm  ${_env} | kubectl apply --dry-run=server -f -
+[[ $ -eq 0 ]] && kustomize build --enable-helm  ${_env} | kubectl apply -f -

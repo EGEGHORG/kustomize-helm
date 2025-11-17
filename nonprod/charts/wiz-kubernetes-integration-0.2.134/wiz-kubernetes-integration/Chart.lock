@@ -1,0 +1,12 @@
+dependencies:
+- name: wiz-kubernetes-connector
+  repository: https://wiz-sec.github.io/charts
+  version: 3.5.1
+- name: wiz-admission-controller
+  repository: https://wiz-sec.github.io/charts
+  version: 3.12.0
+- name: wiz-sensor
+  repository: https://wiz-sec.github.io/charts
+  version: 1.0.8327
+digest: sha256:8ecdde92f56a0f935a50fb3dcec18f33b3f80cd50795feee236f24a8fb30f6ec
+generated: "2025-11-09T07:30:24.592820681Z"
